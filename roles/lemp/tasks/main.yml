@@ -1,0 +1,98 @@
+---
+
+# System update
+
+- name: Update packages cache
+  apt:
+    update_cache: yes
+
+# Nginx
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: latest
+
+- name: Removes "default" site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Create Nginx virtual host
+  template:
+    src: vhost.j2
+    dest: /etc/nginx/sites-available/{{ domain_name }}
+  notify: restart nginx
+
+- name: Enable virtual host
+  file:
+    src: /etc/nginx/sites-available/{{ domain_name }}
+    dest: /etc/nginx/sites-enabled/{{ domain_name }}
+    state: link
+  notify: restart nginx
+
+- name: Create web root directory
+  file:
+    path: /var/www/{{ domain_name }}/html
+    state: directory
+
+- name: Upload index.nginx-debian.html file
+  template:
+    src: index.nginx-debian.html
+    dest: /var/www/{{ domain_name }}/html/index.nginx-debian.html
+
+- name: Upload info.php file
+  template:
+    src: info.php.j2
+    dest: /var/www/{{ domain_name }}/html/info.php
+
+# PHP
+
+- name: Install PHP-FPM
+  apt:
+    name: ['php','php-fpm','php-common','php-cli','php-curl']
+    state: latest
+
+- name: Configure php.ini
+  blockinfile:
+    dest: /etc/php/{{ php_version }}/fpm/php.ini
+    block: |
+      date.time = {{ timezone }}
+      cgi-fix_pathinfo = 0
+    backup: yes
+  notify: restart php-fpm
+
+# MariaDB
+
+- name: Install MariaDB
+  apt:
+    name:
+      - mariadb-server
+      - mariadb-common
+      - mariadb-client
+      - python3-pymysql
+    state: latest
+  notify: restart mariadb
+
+- name: Sets the root password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Removes the MariaDB test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+

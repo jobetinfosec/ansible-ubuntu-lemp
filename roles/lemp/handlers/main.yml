@@ -1,0 +1,24 @@
+---
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: restart php-fpm
+  service:
+    name: php{{ php_version }}-fpm
+    state: restarted
+    enabled: yes
+
+- name: restart mariadb
+  service:
+    name: mariadb
+    state: restarted
+    enabled: yes
+
+
+
+    
+
+
