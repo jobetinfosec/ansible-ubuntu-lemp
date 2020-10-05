@@ -1,4 +1,4 @@
-# LEMP setup of Ubuntu 20.04 server
+# LEMP setup on Ubuntu 20.04 server
 
 
 ## Description
@@ -32,7 +32,7 @@ Ubuntu 20.04
 
 a) Cloud Platform account<br />
 b) A VPS server with Ubuntu 20.04 already installed<br />
-c) An SSH key pair<br />
+c) An SSH key pair, with the public key already installed in the remote server<br />
 
 
 
